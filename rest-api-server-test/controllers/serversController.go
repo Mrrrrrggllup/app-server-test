@@ -45,10 +45,7 @@ func CreateServer(c *gin.Context) {
 
 	// Check if the server name already exists
 	var existingServer models.Server
-	if err := models.DB.Where("name = ?", input.Name).First(&existingServer).Error; err != nil {
-		c.JSON(http.StatusBadRequest, gin.H{"error": err.Error()})
-		return
-	}
+	models.DB.Where("name = ?", input.Name).First(&existingServer)
 
 	if existingServer.ID != 0 {
 		c.JSON(http.StatusConflict, gin.H{"error": fmt.Sprintf("Server name %s already exists", input.Name)})
@@ -77,7 +74,7 @@ func FindServer(c *gin.Context) {
 	c.JSON(http.StatusOK, gin.H{"data": server})
 }
 
-// PATCH /servers/status
+// PUT /servers/status
 // Update servers status
 func UpdateServerStatus(c *gin.Context) {
 
@@ -124,13 +121,17 @@ func UpdateServer(c *gin.Context) {
 
 	// Get model if exist
 	var server models.Server
+
 	if err := models.DB.Where("id = ?", c.Param("id")).First(&server).Error; err != nil {
 		c.JSON(http.StatusNotFound, gin.H{"error": "Record not found!"})
 		return
 	}
 
+	fmt.Println(input)
+	fmt.Println(server)
+
 	// Check if the server name already exists
-	if input.Name != "" {
+	if input.Name != "" && input.Name != server.Name {
 		var existingServer models.Server
 		if err := models.DB.Where("name = ?", input.Name).First(&existingServer).Error; err != nil {
 			c.JSON(http.StatusBadRequest, gin.H{"error": err.Error()})
@@ -161,6 +162,36 @@ func DeleteServer(c *gin.Context) {
 	models.DB.Delete(&server)
 
 	c.JSON(http.StatusOK, gin.H{"data": true})
+}
+
+// DELETE /servers
+// Delete a server
+func DeleteServers(c *gin.Context) {
+	// Get model if exist
+	var input []int64
+	if err := c.ShouldBindJSON(&input); err != nil {
+		c.JSON(http.StatusBadRequest, gin.H{"error": err.Error()})
+		return
+	}
+
+	var servers []models.Server
+
+	if err := models.DB.Where(input).Find(&servers).Error; err != nil {
+		c.JSON(http.StatusInternalServerError, gin.H{"error": err.Error()})
+		return
+	}
+
+	if err := validateServerIDs(input, servers); err != nil {
+		c.JSON(http.StatusNotFound, gin.H{"error": err.Error()})
+		return
+	}
+
+	if err := models.DB.Delete(&servers).Error; err != nil {
+		c.JSON(http.StatusInternalServerError, gin.H{"error": "Failed to delete servers"})
+		return
+	}
+
+	c.JSON(http.StatusOK, servers)
 }
 
 func validateServerIDs(ids []int64, servers []models.Server) error {
