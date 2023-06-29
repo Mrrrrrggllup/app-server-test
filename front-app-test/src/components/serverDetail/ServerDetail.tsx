@@ -1,15 +1,15 @@
 import React, { useEffect, useState } from 'react';
 import { useParams } from 'react-router-dom';
-import { createServer, fetchServer, updateServer } from "../service/apiService";
-import Loadder from '../views/Loadder';
+import { createServer, fetchServer, updateServer } from "../../service/apiService";
+import Loadder from '../../views/Loadder';
 import styled from 'styled-components';
-import Server, { ServerStatus, ServerType } from '../interfaces/Server';
+import Server, { ServerStatus, ServerType } from '../../interfaces/Server';
 import { Autocomplete, TextField } from '@mui/material';
 import Button from '@mui/material/Button';
-import { isAbsent } from '../utils/ValidateData';
-import Toaster from '../views/Toaster';
+import { isAbsent } from '../../utils/ValidateData';
+import Toaster from '../../views/Toaster';
 import { useNavigate } from 'react-router-dom';
-import ApiResponse from '../interfaces/ApiResponse';
+import ApiResponse from '../../interfaces/ApiResponse';
 
 const StyledContainer = styled.div`
   display: flex;

@@ -1,12 +1,12 @@
 import React, { useEffect, useState } from 'react';
-import useGestServers from '../customHooks/useGetServers';
+import useGestServers from '../../customHooks/useGetServers';
 import styled from 'styled-components';
-import ServerTable from './table/ServerTable';
-import Loadder from '../views/Loadder';
-import { deleteServer, deleteServers, updateServersStatus } from '../service/apiService';
-import { ServerStatus } from '../interfaces/Server';
+import ServerTable from '../table/ServerTable';
+import Loadder from '../../views/Loadder';
+import { deleteServer, deleteServers, updateServersStatus } from '../../service/apiService';
+import { ServerStatus } from '../../interfaces/Server';
 import { useNavigate } from 'react-router-dom';
-import ModalConfirm from '../views/ModalConfirm';
+import ModalConfirm from '../../views/ModalConfirm';
 
 const TableBloc = styled.div`
     width: 60%;
