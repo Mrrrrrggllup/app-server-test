@@ -1,87 +1,33 @@
 import * as React from 'react';
-import { alpha } from '@mui/material/styles';
 import Box from '@mui/material/Box';
 import Table from '@mui/material/Table';
 import TableBody from '@mui/material/TableBody';
 import TableCell from '@mui/material/TableCell';
 import TableContainer from '@mui/material/TableContainer';
-import TableHead from '@mui/material/TableHead';
 import TablePagination from '@mui/material/TablePagination';
 import TableRow from '@mui/material/TableRow';
-import TableSortLabel from '@mui/material/TableSortLabel';
-import Toolbar from '@mui/material/Toolbar';
-import Typography from '@mui/material/Typography';
 import Paper from '@mui/material/Paper';
 import Checkbox from '@mui/material/Checkbox';
-import IconButton from '@mui/material/IconButton';
-import Tooltip from '@mui/material/Tooltip';
-import DeleteIcon from '@mui/icons-material/Delete';
-import FilterListIcon from '@mui/icons-material/FilterList';
-import { visuallyHidden } from '@mui/utils';
-import Server, { ServerStatus } from '../interfaces/Server';
-import EditIcon from '@mui/icons-material/Edit';
-import StopIcon from '@mui/icons-material/Stop';
-import PlayArrowIcon from '@mui/icons-material/PlayArrow';
+import Server, { ServerStatus } from '../../interfaces/Server';
+import { Link } from 'react-router-dom';
+import styled from 'styled-components';
+import EnhancedTableHead from './EnhancedTableHead';
+import EnhancedTableToolbar from './EnhancedTableToolbar';
 
-function displayPlayStopIcon(handleClickPlay: any, handleClickStop: any) {
-    return (
-        <>
-        <Tooltip title="Start Server">
-        <IconButton onClick={handleClickPlay}>
-          <PlayArrowIcon />
-        </IconButton>
-      </Tooltip>
-        <Tooltip title="Stop Server">
-        <IconButton onClick={handleClickStop}>
-            <StopIcon />
-        </IconButton>
-        </Tooltip>
-      </>
-    );
-}
+const CreateServerDiv = styled.div`
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  text-align: center;
+  margin: 20px;
+`;
 
-
-function displayActionButton(selectedNumber: number, handleClickPlay: any, handleClickStop: any, handleClickEdit: any, handleClickDelete: any) {
-    if (selectedNumber === 0) {
-        return (
-            <Tooltip title="Filter list">
-                <IconButton>
-                    <FilterListIcon />
-                </IconButton>
-            </Tooltip>
-        );
-    } 
-    
-    if (selectedNumber === 1) {
-        return (
-            <>
-            {displayPlayStopIcon(handleClickPlay, handleClickStop)}
-            <Tooltip title="Update">
-            <IconButton onClick={handleClickEdit}>
-              <EditIcon />
-            </IconButton>
-          </Tooltip>
-          <Tooltip title="Delete">
-            <IconButton onClick={handleClickDelete}>
-              <DeleteIcon />
-            </IconButton>
-          </Tooltip>
-          </>
-        );
-      }
-
-      return (
-        <>
-        {displayPlayStopIcon(handleClickPlay, handleClickStop)}
-        <Tooltip title="Delete">
-            <IconButton onClick={handleClickDelete}>
-              <DeleteIcon />
-            </IconButton>
-          </Tooltip>
-          </>
-      )
-
-}
+const CreateServerLink = styled(Link)`
+  text-decoration: none;
+  font-weight: bold;
+  font-style: italic;
+`;
 
 function descendingComparator<T>(a: T, b: T, orderBy: keyof T) {
   if (b[orderBy] < a[orderBy]) {
@@ -117,144 +63,6 @@ function stableSort<T>(array: readonly T[], comparator: (a: T, b: T) => number) 
     return a[1] - b[1];
   });
   return stabilizedThis.map((el) => el[0]);
-}
-
-interface HeadCell {
-  disablePadding: boolean;
-  id: keyof Server;
-  label: string;
-  numeric: boolean;
-}
-
-const headCells: readonly HeadCell[] = [
-  {
-    id: 'name',
-    numeric: false,
-    disablePadding: false,
-    label: 'Name',
-  },
-  {
-    id: 'id',
-    numeric: false,
-    disablePadding: true,
-    label: 'Id',
-  },
-  {
-    id: 'type',
-    numeric: false,
-    disablePadding: true,
-    label: 'Type',
-  },
-  {
-    id: 'status',
-    numeric: false,
-    disablePadding: true,
-    label: 'Status',
-  }
-];
-
-interface EnhancedTableProps {
-  numSelected: number;
-  onRequestSort: (event: React.MouseEvent<unknown>, property: keyof Server) => void;
-  onSelectAllClick: (event: React.ChangeEvent<HTMLInputElement>) => void;
-  order: Order;
-  orderBy: string;
-  rowCount: number;
-  rows: Server[];
-}
-
-function EnhancedTableHead(props: EnhancedTableProps) {
-  const { onSelectAllClick, order, orderBy, numSelected, rowCount, onRequestSort } =
-    props;
-  const createSortHandler =
-    (property: keyof Server) => (event: React.MouseEvent<unknown>) => {
-      onRequestSort(event, property);
-    };
-
-  return (
-    <TableHead>
-      <TableRow>
-        <TableCell padding="checkbox">
-          <Checkbox
-            color="primary"
-            indeterminate={numSelected > 0 && numSelected < rowCount}
-            checked={rowCount > 0 && numSelected === rowCount}
-            onChange={onSelectAllClick}
-            inputProps={{
-              'aria-label': 'select all servers',
-            }}
-          />
-        </TableCell>
-        {headCells.map((headCell) => (
-          <TableCell
-            key={headCell.id}
-            align={headCell.numeric ? 'right' : 'left'}
-            padding={headCell.disablePadding ? 'none' : 'normal'}
-            sortDirection={orderBy === headCell.id ? order : false}
-          >
-            <TableSortLabel
-              active={orderBy === headCell.id}
-              direction={orderBy === headCell.id ? order : 'asc'}
-              onClick={createSortHandler(headCell.id)}
-            >
-              {headCell.label}
-              {orderBy === headCell.id ? (
-                <Box component="span" sx={visuallyHidden}>
-                  {order === 'desc' ? 'sorted descending' : 'sorted ascending'}
-                </Box>
-              ) : null}
-            </TableSortLabel>
-          </TableCell>
-        ))}
-      </TableRow>
-    </TableHead>
-  );
-}
-
-interface EnhancedTableToolbarProps {
-  numSelected: number;
-  handleClickPlay: () => void;
-    handleClickStop: () => void;
-    handleClickEdit: () => void;
-    handleClickDelete: () => void;
-}
-
-function EnhancedTableToolbar(props: EnhancedTableToolbarProps) {
-  const { numSelected, handleClickDelete, handleClickEdit, handleClickPlay, handleClickStop } = props;
-
-  return (
-    <Toolbar
-      sx={{
-        pl: { sm: 2 },
-        pr: { xs: 1, sm: 1 },
-        ...(numSelected > 0 && {
-          bgcolor: (theme) =>
-            alpha(theme.palette.primary.main, theme.palette.action.activatedOpacity),
-        }),
-      }}
-    >
-      {numSelected > 0 ? (
-        <Typography
-          sx={{ flex: '1 1 100%' }}
-          color="inherit"
-          variant="subtitle1"
-          component="div"
-        >
-          {numSelected} selected
-        </Typography>
-      ) : (
-        <Typography
-          sx={{ flex: '1 1 100%' }}
-          variant="h6"
-          id="tableTitle"
-          component="div"
-        >
-          <h3>Your server list</h3>
-        </Typography>
-      )}
-      {displayActionButton(numSelected, handleClickPlay, handleClickStop, handleClickEdit, handleClickDelete  )}
-    </Toolbar>
-  );
 }
 
 interface ServerTableProps {
@@ -347,7 +155,6 @@ export default function ServerTable(props: ServerTableProps) {
           case 'starting':
             return '🚦';
           case 'running':
-            console.log('offline');
             return '✅';
           case 'stopping':
             return '📛';
@@ -429,6 +236,12 @@ export default function ServerTable(props: ServerTableProps) {
             </TableBody>
           </Table>
         </TableContainer>
+        {rows.length === 0 && 
+          <CreateServerDiv>
+            <p>You have no server yet !</p>
+          <CreateServerLink  to={`/server`}>Create one ?</CreateServerLink >
+          </CreateServerDiv>
+        }
         <TablePagination
           rowsPerPageOptions={[5, 10, 25]}
           component="div"

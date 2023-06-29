@@ -6,6 +6,10 @@ import styled from 'styled-components';
 import Server, { ServerStatus, ServerType } from '../interfaces/Server';
 import { Autocomplete, TextField } from '@mui/material';
 import Button from '@mui/material/Button';
+import { isAbsent } from '../utils/ValidateData';
+import Toaster from '../views/Toaster';
+import { useNavigate } from 'react-router-dom';
+import ApiResponse from '../interfaces/ApiResponse';
 
 const StyledContainer = styled.div`
   display: flex;
@@ -15,7 +19,7 @@ const StyledContainer = styled.div`
   margin: 8%;
 `;
 
-const StyledForm = styled.div`
+const StyledForm = styled.form`
   display: flex;
   flex-direction: column;
   align-items: center;
@@ -39,23 +43,76 @@ const StyledInput = styled(TextField)`
 const ServerDetail: React.FC = () => {
   const { id } = useParams<{ id: string }>();
   const [server, setServer] = useState<any>({});
+  const [loading, setLoading] = useState<boolean>(false);
   const serverTypes: Array<ServerType> = ['small', 'medium', 'large'];
   const serverStatus: Array<ServerStatus> = ['starting' , 'running' , 'stopping' , 'stopped'];
+  const [errors, setErrors] = useState<any>({});
+  const [toast, setToast] = useState<any>({});
+  const navigate = useNavigate();
+
+  function validate() : boolean {
+    let errors: any = {};
+    errors.type = isAbsent(server.type);
+    errors.status = isAbsent(server.status);
+    errors.name = isAbsent(server.name);
+    setErrors(errors);
+    return !errors.type && !errors.status && !errors.name;
+  }
+
+  function handleErrorReturnAndContinue(error: string) {
+    console.log(error);
+    if (error) {
+      setToast({message: error, type: 'error'});
+      if (error.includes('already exists')) {
+        setErrors({...errors, nameAlreadyExist: true});
+      }
+      return false;
+    } else {
+      setErrors({...errors, nameAlreadyExist: false});
+      return true;
+    }
+  }
+
+  function getHelperTextName() {
+    if (errors.nameAlreadyExist) {
+      return "Name already exist";
+    } 
+
+    if (errors.name) {
+      return "Required";
+    }
+
+    return '';
+  }
 
   function upsertServer() {
+    setLoading(true);
+    let isValid = validate();
+    if (!isValid) {
+      setLoading(false);
+      return;
+    }
     if (server.id) {
         // update
         updateServer(server)
-        .then((data) => {
-            console.log(data, "madata");
-            setServer(data);
+        .then((res) => {
+            if (handleErrorReturnAndContinue(res.error)) {
+              setServer(res.data.body);
+              setToast({message: 'Server updated successfully', type: 'success'});
+              navigate(`/`);
+            }
+            setLoading(false);
         });
     } else {
         // create
         createServer(server)
-        .then((data: Server) => {
-            console.log(data, "madata");
-            setServer(data);
+        .then((res: ApiResponse<Server>) => {
+          if (handleErrorReturnAndContinue(res.error)) {
+            setServer(res.data.body);
+            setToast({message: 'Server created successfully', type: 'success'});
+            navigate(`/`);
+          }
+          setLoading(false);
         });
     }
 }
@@ -63,9 +120,11 @@ const ServerDetail: React.FC = () => {
   useEffect(() => {
     if (id) {
         fetchServer(+id)
-        .then((data) => {
-            setServer(data);
-            });
+        .then((res) => {
+            if (handleErrorReturnAndContinue(res.error)) {
+              setServer(res.data.body);
+            }
+        });
     }
   }, [id]);
 
@@ -75,14 +134,17 @@ const ServerDetail: React.FC = () => {
 
   return (
     <StyledContainer>
-      <h3>{server.name || 'New server'} {`#${server.id}` || ''}</h3>
-      <StyledForm>
+      <Toaster toast={toast}/>
+      <h3>{server.id ? server.name : 'New server'} {server.id ? `#${server.id}` : ''}</h3>
+      <StyledForm >
         <StyledInput
+          error={errors.name || errors.nameAlreadyExist}
           required
           id="outlined-required"
           onChange={(e: any) => setServer({...server, name: e.target.value})}
-          label="Required"
-          value={server.name || 'Server Name'}
+          label="Name"
+          helperText={getHelperTextName()}
+          value={server.name || ''}
         />
         <StyledSelectBox>
         <Autocomplete
@@ -93,7 +155,8 @@ const ServerDetail: React.FC = () => {
           onChange={(e: any, value) => setServer({...server, type: value})}
           value={server.type || ''}
           sx={{ width: 300 }}
-          renderInput={(params) => <StyledInput {...params} label="Type" required />}
+          
+          renderInput={(params) => <StyledInput {...params} label="Type" required error={errors.type} helperText={errors.type ? "Required" : ''}/>}
         />
         <Autocomplete
           disablePortal
@@ -102,10 +165,10 @@ const ServerDetail: React.FC = () => {
           onChange={(e, value) => setServer({...server, status: value})}
           value={server.status || ''}
           sx={{ width: 300 }}
-          renderInput={(params) => <StyledInput {...params} label="Status" />}
+          renderInput={(params) => <StyledInput {...params} error={errors.status} label="Status" required helperText={errors.status ? "Required" : ''}/>}
         />
         </StyledSelectBox>
-        <Button variant="contained" href="#contained-buttons" sx={{marginTop : "50px"}} onClick={upsertServer}>
+        <Button variant="contained" href="#contained-buttons" sx={{marginTop : "50px"}} onClick={upsertServer} disabled={loading}>
             {server.id ? 'Update' : 'Create'}
       </Button>
       </StyledForm>
