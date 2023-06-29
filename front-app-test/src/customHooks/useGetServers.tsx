@@ -1,7 +1,6 @@
 import { useState, useEffect } from "react"
 import { fetchServers } from "../service/apiService";
 import Server from "../interfaces/Server";
-import { getServers } from "dns";
 
 const useGestServers = () => {
     const [servers, setServers] = useState<Server[]>([]);
@@ -12,9 +11,9 @@ const useGestServers = () => {
     let getServers = async () => {
       setLoading(true);
       fetchServers()
-      .then((data) => {
-        console.log(data);
-        setServers(data);
+      .then((res) => {
+        console.log(res);
+        setServers(res);
         setLoading(false);
       })
       .catch((e) => {

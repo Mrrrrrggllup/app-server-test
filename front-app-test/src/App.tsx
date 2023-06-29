@@ -13,6 +13,8 @@ function App() {
         <Routes>
           <Route path="/" element={<ServerList />} />
           <Route path="/server/:id" element={<ServerDetail />} />
+          <Route path="/server" element={<ServerDetail />} />
+          <Route path="*" element={<h1>404 Not Found</h1>} />
         </Routes>
       </Router>
     

@@ -1,6 +1,8 @@
 import React from 'react';
 import styled from 'styled-components';
 import AddIcon from '@mui/icons-material/Add';
+import { useNavigate } from 'react-router-dom';
+import { Link } from 'react-router-dom';
 
 const NavbarContainer = styled.div`
   display: flex;
@@ -11,14 +13,15 @@ const NavbarContainer = styled.div`
 `;
 
 const Title = styled.div`
-  font-size: 20px;
+  font-size: 30px;
   font-weight: bold;
+  color: RGB(100, 35, 165);
 `;
 
 const AddButton = styled.button`
   display: flex;
   align-items: center;
-  background-color: #007bff;
+  background-color: RGB(100, 35, 165);
   color: #fff;
   padding: 8px 12px;
   border: none;
@@ -30,11 +33,20 @@ const AddButton = styled.button`
   }
 `;
 
+
+
+
 const Navbar: React.FC = () => {
+  const navigate = useNavigate();
+
+  function goToCreate() {
+    navigate(`server`);
+  }
+
   return (
     <NavbarContainer>
-      <Title>scaleway-test</Title>
-      <AddButton>
+      <Title><Link style={{textDecoration: 'none'}} to={`/`}>scaleway-test</Link></Title>
+      <AddButton onClick={goToCreate}>
         <AddIcon />
         Ajouter
       </AddButton>

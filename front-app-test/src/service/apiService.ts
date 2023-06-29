@@ -1,3 +1,4 @@
+import ApiResponse from "../interfaces/ApiResponse";
 import Server from "../interfaces/Server";
 import UpdateServerStatusPayload from "../interfaces/UpdateServerStatusPayload";
 
@@ -7,17 +8,17 @@ export function fetchServers() : Promise<Server[]> {
     const url = `${API_URL}/servers`;
     return fetch(url)
     .then((res) => res.json())
-    .then((res) => res.data)
+    .then((res) => res.data);
 }
 
-export function fetchServer(id: number) : Promise<Server> {
+export function fetchServer(id: number) : Promise<ApiResponse<Server>> {
     const url = `${API_URL}/server/${id}`;
     return fetch(url)
     .then((res) => res.json())
-    .then((res) => res.data)
+    .then((res) => res);
 }
 
-export function createServer(server: Server) : Promise<Server> {
+export function createServer(server: Server) : Promise<ApiResponse<Server>> {
     const url = `${API_URL}/server`;
     return fetch(url, {
         method: 'POST',
@@ -26,11 +27,10 @@ export function createServer(server: Server) : Promise<Server> {
         },
         body: JSON.stringify(server)
     })
-    .then((res) => res.json())
-    .then((res) => res.data)
+    .then((res) => res.json());
 }
 
-export function updateServer(server: Server) : Promise<Server> {
+export function updateServer(server: Server) : Promise<ApiResponse<Server>> {
     const url = `${API_URL}/server/${server.id}`;
     return fetch(url, {
         method: 'PATCH',
@@ -39,8 +39,7 @@ export function updateServer(server: Server) : Promise<Server> {
         },
         body: JSON.stringify(server)
     })
-    .then((res) => res.json())
-    .then((res) => res.data)
+    .then((res) => res.json());
 }
 
 export function deleteServer(id: number) : Promise<boolean> {
@@ -65,7 +64,7 @@ export function deleteServers(ids: number[]) : Promise<boolean> {
     .then((res) => res.data)
 }
 
-export function updateServersStatus(body: UpdateServerStatusPayload) : Promise<Server[]> {
+export function updateServersStatus(body: UpdateServerStatusPayload) : Promise<ApiResponse<Server[]>> {
     const url = `${API_URL}/servers/status`;
     return fetch(url, {
         method: 'PUT',
