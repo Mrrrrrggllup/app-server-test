@@ -4,18 +4,32 @@ import UpdateServerStatusPayload from "../interfaces/UpdateServerStatusPayload";
 
 const API_URL = 'http://localhost:8080';
 
-export function fetchServers() : Promise<Server[]> {
+export function fetchServers() : Promise<ApiResponse<Server[]>> {
     const url = `${API_URL}/servers`;
     return fetch(url)
     .then((res) => res.json())
-    .then((res) => res.data);
+    .then((res) => {
+        return {data : { body : res.data}}
+    })
+    .catch((err) => {
+        return {
+            error: err.message
+        };
+    });
 }
 
 export function fetchServer(id: number) : Promise<ApiResponse<Server>> {
     const url = `${API_URL}/server/${id}`;
     return fetch(url)
     .then((res) => res.json())
-    .then((res) => res);
+    .then((res) => {
+        return {data : { body : res.data}}
+        })
+    .catch((err) => {
+        return {
+            error: err.message
+        };
+    });
 }
 
 export function createServer(server: Server) : Promise<ApiResponse<Server>> {
@@ -27,7 +41,12 @@ export function createServer(server: Server) : Promise<ApiResponse<Server>> {
         },
         body: JSON.stringify(server)
     })
-    .then((res) => res.json());
+    .then((res) => res.json())
+    .catch((err) => {
+        return {
+            error: err.message
+        };
+    });
 }
 
 export function updateServer(server: Server) : Promise<ApiResponse<Server>> {
@@ -39,19 +58,34 @@ export function updateServer(server: Server) : Promise<ApiResponse<Server>> {
         },
         body: JSON.stringify(server)
     })
-    .then((res) => res.json());
+    .then((res) => res.json())
+    .then((res) => {
+        return {data : { body : res.data}}
+    })
+    .catch((err) => {
+        return {
+            error: err.message
+        };
+    });
 }
 
-export function deleteServer(id: number) : Promise<boolean> {
+export function deleteServer(id: number) : Promise<ApiResponse<boolean>> {
     const url = `${API_URL}/server/${id}`;
     return fetch(url, {
         method: 'DELETE'
     })
     .then((res) => res.json())
-    .then((res) => res.data)
+    .then((res) => {
+        return {data : { body : res.data}}
+    })
+    .catch((err) => {
+        return {
+            error: err.message
+        };
+    });
 }
 
-export function deleteServers(ids: number[]) : Promise<boolean> {
+export function deleteServers(ids: number[]) : Promise<ApiResponse<boolean>> {
     const url = `${API_URL}/servers`;
     return fetch(url, {
         method: 'DELETE',
@@ -61,7 +95,14 @@ export function deleteServers(ids: number[]) : Promise<boolean> {
         body: JSON.stringify(ids)
     })
     .then((res) => res.json())
-    .then((res) => res.data)
+    .then((res) => {
+        return {data : { body : res.data}}
+    })
+    .catch((err) => {
+        return {
+            error: err.message
+        };
+    });
 }
 
 export function updateServersStatus(body: UpdateServerStatusPayload) : Promise<ApiResponse<Server[]>> {
@@ -74,5 +115,12 @@ export function updateServersStatus(body: UpdateServerStatusPayload) : Promise<A
         body: JSON.stringify(body)
     })
     .then((res) => res.json())
-    .then((res) => res.data)
+    .then((res) => {
+        return {data : { body : res.data}}
+    })
+    .catch((err) => {
+        return {
+            error: err.message
+        };
+    });
 }

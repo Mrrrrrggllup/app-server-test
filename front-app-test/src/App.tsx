@@ -1,9 +1,9 @@
 import React from 'react';
 import './App.css';
-import ServerList from './components/ServerList';
-import Navbar from './components/Navbar';
+import ServerList from './components/serverList/ServerList';
+import Navbar from './components/navbar/Navbar';
 import { BrowserRouter as Router, Routes, Route } from 'react-router-dom';
-import ServerDetail from './components/ServerDetail';
+import ServerDetail from './components/serverDetail/ServerDetail';
 
 function App() {
   return (

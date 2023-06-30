@@ -44,7 +44,7 @@ function ModalConfirm(props: ModalConfirmProps) {
         </DialogContent>
         <DialogActions>
           <Button variant="contained" onClick={onCancel}  sx={{backgroundColor: "blue"}}>Disagree</Button>
-          <Button variant="contained" onClick={onConfirm}  sx={{backgroundColor: "RGB(100, 35, 165)"}}>Agree</Button>
+          <Button variant="contained" onClick={onConfirm} data-testid="modal-agree"  sx={{backgroundColor: "RGB(100, 35, 165)"}}>Agree</Button>
         </DialogActions>
       </Dialog>
     );

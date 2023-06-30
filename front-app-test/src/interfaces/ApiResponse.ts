@@ -3,6 +3,6 @@ interface ApiBody<T> {
 }
 
 export default interface ApiResponse<T> {
-    data: ApiBody<T>;
-    error: string;
+    data?: ApiBody<T>;
+    error?: string;
 }

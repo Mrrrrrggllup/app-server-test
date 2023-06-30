@@ -1,12 +1,12 @@
-import React, { useEffect, useState } from 'react';
-import useGestServers from '../customHooks/useGetServers';
+import React, { useState } from 'react';
+import useGestServers from '../../customHooks/useGetServers';
 import styled from 'styled-components';
-import ServerTable from './table/ServerTable';
-import Loadder from '../views/Loadder';
-import { deleteServer, deleteServers, updateServersStatus } from '../service/apiService';
-import { ServerStatus } from '../interfaces/Server';
+import ServerTable from '../table/ServerTable';
+import Loadder from '../../views/Loadder';
+import { deleteServer, deleteServers, updateServersStatus } from '../../service/apiService';
+import Server, { ServerStatus } from '../../interfaces/Server';
 import { useNavigate } from 'react-router-dom';
-import ModalConfirm from '../views/ModalConfirm';
+import ModalConfirm from '../../views/ModalConfirm';
 
 const TableBloc = styled.div`
     width: 60%;
@@ -14,7 +14,7 @@ const TableBloc = styled.div`
 `;
 
 function ServerList() {
-  const {servers, loading, error, getServers} = useGestServers();
+  const {servers, loading, setServers, getServers} = useGestServers();
   const [selected, setSelected] = useState<string[]>([]);
   const [openModal, setOpenModal] = useState<boolean>(false);
   const navigate = useNavigate();
@@ -25,11 +25,8 @@ function ServerList() {
     return servers.find(server => server.name === name);
   }
 
-  useEffect(() => {
-    console.log("componentServerListOn");
-  }, [])
-
   function getSelectedServerIds() {
+    // eslint-disable-next-line array-callback-return
     return selected.map(serverName => getServerByName(serverName))?.map(x => {
         if (x) {
             return x.id;
@@ -41,7 +38,14 @@ function ServerList() {
     let ids = getSelectedServerIds();
     updateServersStatus({ids, status})
     .then(() => {
-        getServers();
+        let newServerList: Server[] = []
+        servers.forEach((server) => {
+            if (ids.includes(server.id)) {
+                server.status = status;
+            }
+            newServerList.push(server);
+        });
+        setServers(newServerList);
         setSelected([]);
     });
   }
@@ -66,16 +70,16 @@ function ServerList() {
             let ids = getSelectedServerIds();
             deleteServers(ids)
             .then(() => {
-                setSelected([]);
                 getServers();
+                setSelected([]);
             });
         } else if (selected.length === 1) {
             const server = getServerByName(selected[0]);
             if (server) {
                 deleteServer(server.id)
                 .then(() => {
-                    setSelected([]);
                     getServers();
+                    setSelected([]);
                 });
             }
         }
@@ -84,17 +88,11 @@ function ServerList() {
     function handleEdit() {
         if (selected.length === 1) {
             const id = getServerByName(selected[0])?.id;
-            console.log(id);
             if (id) {
                 navigate(`server/${id}`);
             }
         }
     }
-
-
-  useEffect(() => {
-    console.log(error);
-  }, [error])
 
   if (loading) {
     return (

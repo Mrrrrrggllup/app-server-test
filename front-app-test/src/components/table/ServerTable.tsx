@@ -149,7 +149,6 @@ export default function ServerTable(props: ServerTableProps) {
 
 
     const displayStatus = (status: ServerStatus) => {
-        console.log(status);
 
         switch (status) {
           case 'starting':
@@ -207,6 +206,7 @@ export default function ServerTable(props: ServerTableProps) {
                         checked={isItemSelected}
                         inputProps={{
                           'aria-labelledby': labelId,
+                          className: row.name,
                         }}
                       />
                     </TableCell>
@@ -220,7 +220,7 @@ export default function ServerTable(props: ServerTableProps) {
                     </TableCell>
                     <TableCell align="left">{row.id}</TableCell>
                     <TableCell align="left">{row.type}</TableCell>
-                    <TableCell align="left">{displayStatus(row.status)}</TableCell>
+                    <TableCell data-testid={row.status} align="left">{displayStatus(row.status)}</TableCell>
                   </TableRow>
                 );
               })}
