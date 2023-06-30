@@ -59,8 +59,7 @@ const ServerDetail: React.FC = () => {
     return !errors.type && !errors.status && !errors.name;
   }
 
-  function handleErrorReturnAndContinue(error: string) {
-    console.log(error);
+  function handleErrorReturnAndContinue(error: string | undefined) {
     if (error) {
       setToast({message: error, type: 'error'});
       if (error.includes('already exists')) {
@@ -85,6 +84,13 @@ const ServerDetail: React.FC = () => {
     return '';
   }
 
+  useEffect(() => {
+    if (errors.name !== undefined) {
+      validate();
+    }
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [server]);
+
   function upsertServer() {
     setLoading(true);
     let isValid = validate();
@@ -96,8 +102,8 @@ const ServerDetail: React.FC = () => {
         // update
         updateServer(server)
         .then((res) => {
-            if (handleErrorReturnAndContinue(res.error)) {
-              setServer(res.data.body);
+            if (handleErrorReturnAndContinue(res?.error)) {
+              setServer(res?.data?.body);
               setToast({message: 'Server updated successfully', type: 'success'});
               navigate(`/`);
             }
@@ -107,8 +113,8 @@ const ServerDetail: React.FC = () => {
         // create
         createServer(server)
         .then((res: ApiResponse<Server>) => {
-          if (handleErrorReturnAndContinue(res.error)) {
-            setServer(res.data.body);
+          if (handleErrorReturnAndContinue(res?.error)) {
+            setServer(res?.data?.body);
             setToast({message: 'Server created successfully', type: 'success'});
             navigate(`/`);
           }
@@ -121,11 +127,12 @@ const ServerDetail: React.FC = () => {
     if (id) {
         fetchServer(+id)
         .then((res) => {
-            if (handleErrorReturnAndContinue(res.error)) {
-              setServer(res.data.body);
+            if (handleErrorReturnAndContinue(res?.error)) {
+              setServer(res?.data?.body);
             }
         });
     }
+    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [id]);
 
   if (!server) {

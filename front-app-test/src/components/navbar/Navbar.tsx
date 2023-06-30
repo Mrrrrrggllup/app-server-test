@@ -33,9 +33,6 @@ const AddButton = styled.button`
   }
 `;
 
-
-
-
 const Navbar: React.FC = () => {
   const navigate = useNavigate();
 

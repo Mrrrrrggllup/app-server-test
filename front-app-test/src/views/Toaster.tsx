@@ -19,7 +19,6 @@ function Toaster(props: ToasterProps) {
 
     useEffect(() => {
         if (toast) {
-            console.log(toastToDisplay, "coucou");
             switch (toastToDisplay.type) {
                 case "success":
                     toast.success(toastToDisplay.message, {
