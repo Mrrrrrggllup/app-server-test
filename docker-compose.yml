@@ -1,0 +1,30 @@
+version: '3'
+services:
+  db:
+    image: postgres
+    restart: always
+    environment:
+      POSTGRES_USER: admin
+      POSTGRES_PASSWORD: admin
+      POSTGRES_DB: rest-api-server-test
+    ports:
+      - 5432:5432
+
+  backend:
+    build: ./rest-api-server-test
+    restart: always
+    ports:
+      - 8000:8080
+    depends_on:
+      - db
+    command: >
+      sh -c "sleep 5 && go run main.go"
+
+
+  frontend:
+    build: ./front-app-test
+    restart: always
+    ports:
+      - 3000:3000
+    depends_on:
+      - backend

@@ -4,7 +4,7 @@ import styled from 'styled-components';
 import ServerTable from '../table/ServerTable';
 import Loadder from '../../views/Loadder';
 import { deleteServer, deleteServers, updateServersStatus } from '../../service/apiService';
-import Server, { ServerStatus } from '../../interfaces/Server';
+import { ServerStatus } from '../../interfaces/Server';
 import { useNavigate } from 'react-router-dom';
 import ModalConfirm from '../../views/ModalConfirm';
 
@@ -14,7 +14,7 @@ const TableBloc = styled.div`
 `;
 
 function ServerList() {
-  const {servers, loading, setServers, getServers} = useGestServers();
+  const {servers, loading, getServers} = useGestServers();
   const [selected, setSelected] = useState<string[]>([]);
   const [openModal, setOpenModal] = useState<boolean>(false);
   const navigate = useNavigate();
