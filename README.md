@@ -23,6 +23,71 @@ Wait for the containers to start up and become ready.
 The frontend application is accessible at the following URL: http://localhost:3000
 The backend API is accessible at the following URL: http://localhost:8000
 
+## Api calls exemple
+
+GET /servers
+```
+{
+    "data": [
+        {
+            "id": 4,
+            "name": "Mon premier server",
+            "type": "large",
+            "status": "starting"
+        },
+        {
+            "id": 5,
+            "name": "emlazkjedzs",
+            "type": "medium",
+            "status": "running"
+        }
+    ]
+}
+```
+GET /server/:id
+```
+{
+    "data": {
+        "id": 196,
+        "name": "Server Name",
+        "type": "large",
+        "status": "stopped"
+    }
+}
+```
+GET /server/:id 
+```
+{
+    "error": "Record not found!"
+}
+```
+POST /server
+**BODY :**
+```
+{
+    "name": "emlazkjedzs",
+    "type" : "medium",
+    "status" : "running"
+}
+```
+
+**RESPONSE :**
+{
+    "data": {
+        "id": 5,
+        "name": "emlazkjedzs",
+        "type": "medium",
+        "status": "running"
+    }
+}
+
+DELETE /server/:id
+```
+{
+    "data": true
+}
+```
+
 ## Testing
 To run the application tests, you can follow the steps below:
 
