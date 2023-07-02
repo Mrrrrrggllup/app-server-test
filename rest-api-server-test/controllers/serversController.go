@@ -3,219 +3,166 @@ package controllers
 import (
 	"fmt"
 	"homeAssignement/rest-api-server-test/models"
+	service "homeAssignement/rest-api-server-test/services"
 	"net/http"
+	"strconv"
 
 	"github.com/gin-gonic/gin"
 )
 
-type CreateServerInput struct {
-	Name string `json:"name" binding:"required"`
-	Type string `json:"type" binding:"required,validServerTypeValue"`
+type ServerController struct {
+	serverService service.ServerService
 }
 
-type UpdateServerInput struct {
-	Name   string `json:"name"`
-	Type   string `json:"type" binding:"validServerTypeValue"`
-	Status string `json:"status" binding:"validServerStatusValue"`
-}
-
-type UpdateServerStatusInput struct {
-	Ids    []int64             `json:"ids" binding:"required,min=1"`
-	Status models.ServerStatus `json:"status" binding:"required,validServerStatusValue"`
+func NewServerController(serverService service.ServerService) *ServerController {
+	return &ServerController{
+		serverService: serverService,
+	}
 }
 
 // GET /servers
 // Get all servers
-func FindServers(c *gin.Context) {
-	var servers []models.Server
-	models.DB.Find(&servers)
+func (c *ServerController) FindServers(ctx *gin.Context) {
+	servers, err := c.serverService.GetAllServers()
+	if err != nil {
+		ctx.JSON(http.StatusInternalServerError, gin.H{"error": "Failed to fetch servers"})
+		return
+	}
 
-	c.JSON(http.StatusOK, gin.H{"data": servers})
+	ctx.JSON(http.StatusOK, gin.H{"data": servers})
 }
 
-// POST /servers
-// Create new server
-func CreateServer(c *gin.Context) {
-	// Validate input
-	var input CreateServerInput
-	if err := c.ShouldBindJSON(&input); err != nil {
-		c.JSON(http.StatusBadRequest, gin.H{"error": err.Error()})
+func (ctrl *ServerController) CreateServer(ctx *gin.Context) {
+	var input models.CreateServerInput
+	if err := ctx.ShouldBindJSON(&input); err != nil {
+		ctx.JSON(http.StatusBadRequest, gin.H{"error": err.Error()})
 		return
 	}
 
-	// Check if the server name already exists
-	var existingServer models.Server
-	models.DB.Where("name = ?", input.Name).First(&existingServer)
-
-	if existingServer.ID != 0 {
-		c.JSON(http.StatusConflict, gin.H{"error": fmt.Sprintf("Server name %s already exists", input.Name)})
+	server, err := ctrl.serverService.CreateServer(input)
+	if err != nil {
+		ctx.JSON(http.StatusConflict, gin.H{"error": err.Error()})
 		return
 	}
 
-	// Create server
-	server := models.Server{Name: input.Name, Type: models.ServerType(input.Type), Status: models.Stopped}
-
-	models.DB.Create(&server)
-
-	c.JSON(http.StatusOK, gin.H{"data": server})
+	ctx.JSON(http.StatusOK, gin.H{"data": server})
 }
 
 // GET /server/:id
 // Find a server by id
-func FindServer(c *gin.Context) {
-	// Get model if exist
-	var server models.Server
-
-	if err := models.DB.Where("id = ?", c.Param("id")).First(&server).Error; err != nil {
-		c.JSON(http.StatusNotFound, gin.H{"error": "Record not found!"})
+func (c *ServerController) FindServerByID(ctx *gin.Context) {
+	serverID, err := getServerIDFromContext(ctx)
+	if err != nil {
+		ctx.JSON(http.StatusBadRequest, gin.H{"error": "Invalid server ID"})
 		return
 	}
 
-	c.JSON(http.StatusOK, gin.H{"data": server})
+	server, err := c.serverService.FindServerByID(serverID)
+	if err != nil {
+		ctx.JSON(http.StatusNotFound, gin.H{"error": "Record not found!"})
+		return
+	}
+
+	ctx.JSON(http.StatusOK, gin.H{"data": server})
 }
 
 // PUT /servers/status
 // Update servers status
-func UpdateServerStatus(c *gin.Context) {
-
-	var input UpdateServerStatusInput
-	if err := c.ShouldBindJSON(&input); err != nil {
-		c.JSON(http.StatusBadRequest, gin.H{"error": err.Error()})
+func (c *ServerController) UpdateServerStatus(ctx *gin.Context) {
+	var input models.UpdateServerStatusInput
+	if err := ctx.ShouldBindJSON(&input); err != nil {
+		ctx.JSON(http.StatusBadRequest, gin.H{"error": err.Error()})
 		return
 	}
 
-	var servers []models.Server
-
-	if err := models.DB.Where(input.Ids).Find(&servers).Error; err != nil {
-		c.JSON(http.StatusInternalServerError, gin.H{"error": err.Error()})
+	servers, err := c.serverService.UpdateServerStatus(input)
+	if err != nil {
+		ctx.JSON(http.StatusInternalServerError, gin.H{"error": err.Error()})
 		return
 	}
 
-	if err := validateServerIDs(input.Ids, servers); err != nil {
-		c.JSON(http.StatusNotFound, gin.H{"error": err.Error()})
-		return
-	}
-
-	for i := range servers {
-		servers[i].Status = models.ServerStatus(input.Status)
-	}
-
-	if err := models.DB.Save(&servers).Error; err != nil {
-		c.JSON(http.StatusInternalServerError, gin.H{"error": "Failed to update servers"})
-		return
-	}
-
-	c.JSON(http.StatusOK, servers)
+	ctx.JSON(http.StatusOK, gin.H{"data": servers})
 }
 
-// PATCH /server/:id
+// PUT /server/:id
 // Update a server
-func UpdateServer(c *gin.Context) {
-
-	// Validate input
-	var input UpdateServerInput
-	if err := c.ShouldBindJSON(&input); err != nil {
-		c.JSON(http.StatusBadRequest, gin.H{"error": err.Error()})
+func (c *ServerController) UpdateServer(ctx *gin.Context) {
+	serverID, err := getServerIDFromContext(ctx)
+	if err != nil {
+		ctx.JSON(http.StatusBadRequest, gin.H{"error": "Invalid server ID"})
 		return
 	}
 
-	// Get model if exist
-	var server models.Server
-
-	if err := models.DB.Where("id = ?", c.Param("id")).First(&server).Error; err != nil {
-		c.JSON(http.StatusNotFound, gin.H{"error": "Record not found!"})
+	var input models.UpdateServerInput
+	if err := ctx.ShouldBindJSON(&input); err != nil {
+		ctx.JSON(http.StatusBadRequest, gin.H{"error": err.Error()})
 		return
 	}
 
-	fmt.Println(input)
-	fmt.Println(server)
-
-	// Check if the server name already exists
-	if input.Name != "" && input.Name != server.Name {
-		var existingServer models.Server
-		if err := models.DB.Where("name = ?", input.Name).First(&existingServer).Error; err != nil {
-			c.JSON(http.StatusBadRequest, gin.H{"error": err.Error()})
-			return
-		}
-
-		if existingServer.ID != 0 {
-			c.JSON(http.StatusConflict, gin.H{"error": fmt.Sprintf("Server name %s already exists", input.Name)})
-			return
-		}
+	server, err := c.serverService.UpdateServer(serverID, input)
+	if err != nil {
+		ctx.JSON(http.StatusInternalServerError, gin.H{"error": err.Error()})
+		return
 	}
 
-	models.DB.Model(&server).Updates(input)
-
-	c.JSON(http.StatusOK, gin.H{"data": server})
+	ctx.JSON(http.StatusOK, gin.H{"data": server})
 }
 
 // DELETE /server/:id
 // Delete a server
-func DeleteServer(c *gin.Context) {
-	// Get model if exist
-	var server models.Server
-	if err := models.DB.Where("id = ?", c.Param("id")).First(&server).Error; err != nil {
-		c.JSON(http.StatusNotFound, gin.H{"error": "Record not found!"})
+func (c *ServerController) DeleteServer(ctx *gin.Context) {
+	serverID := ctx.Param("id")
+	id, err := strconv.ParseInt(serverID, 10, 64)
+	if err != nil {
+		ctx.JSON(http.StatusBadRequest, gin.H{"error": "Invalid server ID"})
 		return
 	}
 
-	models.DB.Delete(&server)
+	err = c.serverService.DeleteServer(id)
+	if err != nil {
+		ctx.JSON(http.StatusInternalServerError, gin.H{"error": "Failed to delete server"})
+		return
+	}
 
-	c.JSON(http.StatusOK, gin.H{"data": true})
+	ctx.JSON(http.StatusOK, gin.H{"data": true})
 }
 
 // DELETE /servers
 // Delete a server
-func DeleteServers(c *gin.Context) {
-	// Get model if exist
+func (c *ServerController) DeleteServers(ctx *gin.Context) {
 	var input []int64
-	if err := c.ShouldBindJSON(&input); err != nil {
-		c.JSON(http.StatusBadRequest, gin.H{"error": err.Error()})
+	if err := ctx.ShouldBindJSON(&input); err != nil {
+		ctx.JSON(http.StatusBadRequest, gin.H{"error": err.Error()})
 		return
 	}
 
-	var servers []models.Server
-
-	if err := models.DB.Where(input).Find(&servers).Error; err != nil {
-		c.JSON(http.StatusInternalServerError, gin.H{"error": err.Error()})
+	err := c.serverService.DeleteServers(input)
+	if err != nil {
+		ctx.JSON(http.StatusInternalServerError, gin.H{"error": "Failed to delete servers"})
 		return
 	}
 
-	if err := validateServerIDs(input, servers); err != nil {
-		c.JSON(http.StatusNotFound, gin.H{"error": err.Error()})
-		return
-	}
-
-	if err := models.DB.Delete(&servers).Error; err != nil {
-		c.JSON(http.StatusInternalServerError, gin.H{"error": "Failed to delete servers"})
-		return
-	}
-
-	c.JSON(http.StatusOK, servers)
+	ctx.JSON(http.StatusOK, gin.H{"data": input})
 }
 
-func validateServerIDs(ids []int64, servers []models.Server) error {
-	idSet := make(map[int64]bool)
-
-	for _, serv := range servers {
-		idSet[serv.ID] = true
-	}
-
-	fmt.Println(idSet)
-
-	missingIDs := make([]int64, 0)
-
-	for _, id := range ids {
-		if !idSet[id] {
-			missingIDs = append(missingIDs, id)
+/*
+func convertServerIDs(input []int64) ([]int64, error) {
+	var ids []int64
+	for _, idStr := range input {
+		id, err := strconv.ParseInt(idStr, 10, 64)
+		if err != nil {
+			return nil, fmt.Errorf("invalid server ID: %s", idStr)
 		}
+		ids = append(ids, id)
 	}
+	return ids, nil
+} */
 
-	if len(missingIDs) > 0 {
-		return fmt.Errorf("IDs not found in server list: %v", missingIDs)
+func getServerIDFromContext(ctx *gin.Context) (int64, error) {
+	serverID := ctx.Param("id")
+	id, err := strconv.ParseInt(serverID, 10, 64)
+	if err != nil {
+		return 0, fmt.Errorf("invalid server ID: %s", serverID)
 	}
-
-	fmt.Println(missingIDs)
-
-	return nil
+	return id, nil
 }

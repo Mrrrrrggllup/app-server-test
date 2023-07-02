@@ -198,20 +198,24 @@ describe('ServerList component properly display servers', () => {
          // Mock updateServerStatus to resolve with the server data
          const updateServerStatusSpy = jest.spyOn(apiService, 'updateServersStatus');
          updateServerStatusSpy.mockResolvedValue(apiResponseStatusUpdate);
-
+         const getServers = jest.spyOn(apiService, 'fetchServers');
+         getServers.mockResolvedValue(apiResponseStatusUpdate);
 
         if (stopButton) {
             // Click on the stop button and verify that the api is called
             await act(async () => {
                 fireEvent.click(stopButton);
+                expect(updateServerStatusSpy).toBeCalledTimes(1);
+                expect(updateServerStatusSpy).toBeCalledWith(payload);
               });
-            expect(updateServerStatusSpy).toBeCalledTimes(1);
-            expect(updateServerStatusSpy).toBeCalledWith(payload);
-            
+
+              waitFor(() => {
+                const newCrossElement = getAllByTestId(document.body, "stopped");
+                expect(newCrossElement).toHaveLength(2);
+              });
         }
        
-        const newCrossElement = getAllByTestId(document.body, "stopped");
-        expect(newCrossElement).toHaveLength(2);
+        
       });
 
       test('Servers Are render in table and we test start button', async () => {
@@ -310,6 +314,8 @@ describe('ServerList component properly display servers', () => {
          // Mock updateServerStatus to resolve with the server data
          const updateServerStatusSpy = jest.spyOn(apiService, 'updateServersStatus');
          updateServerStatusSpy.mockResolvedValue(apiResponseStatusUpdate);
+          const getServers = jest.spyOn(apiService, 'fetchServers');
+          getServers.mockResolvedValue(apiResponseStatusUpdate);
 
 
         if (startButton) {
@@ -322,8 +328,11 @@ describe('ServerList component properly display servers', () => {
             
         }
        
-        const newCrossElement = getAllByTestId(document.body, "running");
-        expect(newCrossElement).toHaveLength(2);
+        waitFor(() => {
+          const newCrossElement = getAllByTestId(document.body, "running");
+          expect(newCrossElement).toHaveLength(2);
+        });
+
       });
 
       test('Servers Are render in table and we test delete button', async () => {
