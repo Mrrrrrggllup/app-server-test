@@ -31,13 +31,13 @@ GET /servers
     "data": [
         {
             "id": 4,
-            "name": "Mon premier server",
+            "name": "Server Name",
             "type": "large",
             "status": "starting"
         },
         {
             "id": 5,
-            "name": "emlazkjedzs",
+            "name": "test 1",
             "type": "medium",
             "status": "running"
         }
@@ -65,21 +65,23 @@ POST /server
 **BODY :**
 ```
 {
-    "name": "emlazkjedzs",
+    "name": "test 1",
     "type" : "medium",
     "status" : "running"
 }
 ```
 
 **RESPONSE :**
+```
 {
     "data": {
         "id": 5,
-        "name": "emlazkjedzs",
+        "name": "test 1",
         "type": "medium",
         "status": "running"
     }
 }
+```
 
 DELETE /server/:id
 ```
