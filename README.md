@@ -14,8 +14,9 @@ Open your terminal and navigate to the root folder of the application.
 Running the Application
 
 Run the following command to start the Docker containers:
+```
 docker-compose up
-
+```
 Wait for the containers to start up and become ready.
 
 ## Accessing the Application
@@ -32,12 +33,16 @@ Navigate to the root folder of the application.
 ### Unit Tests
 To run the backend (Go) unit tests, execute the following command:
 
+```
 docker-compose exec backend go test ./tests
+```
 
 ### Integration Tests
 To run the frontend (React) integration tests, execute the following command:
 
+```
 docker-compose exec frontend npm test
+```
 
 Make sure the Docker containers are running before executing the tests.
 
