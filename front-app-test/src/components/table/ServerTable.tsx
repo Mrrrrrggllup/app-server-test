@@ -144,6 +144,7 @@ export default function ServerTable(props: ServerTableProps) {
         page * rowsPerPage,
         page * rowsPerPage + rowsPerPage,
       ),
+      // eslint-disable-next-line react-hooks/exhaustive-deps
     [order, orderBy, page, rowsPerPage],
   );
 

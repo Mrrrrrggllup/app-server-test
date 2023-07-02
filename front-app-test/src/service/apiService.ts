@@ -2,7 +2,7 @@ import ApiResponse from "../interfaces/ApiResponse";
 import Server from "../interfaces/Server";
 import UpdateServerStatusPayload from "../interfaces/UpdateServerStatusPayload";
 
-const API_URL = 'http://localhost:8080';
+const API_URL = 'http://localhost:8000';
 
 export function fetchServers() : Promise<ApiResponse<Server[]>> {
     const url = `${API_URL}/servers`;
