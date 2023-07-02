@@ -20,7 +20,7 @@ Wait for the containers to start up and become ready.
 
 ## Accessing the Application
 The frontend application is accessible at the following URL: http://localhost:3000
-The backend API is accessible at the following URL: http://localhost:8080
+The backend API is accessible at the following URL: http://localhost:8000
 
 ## Testing
 To run the application tests, you can follow the steps below:
