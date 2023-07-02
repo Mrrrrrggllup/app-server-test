@@ -38,14 +38,7 @@ function ServerList() {
     let ids = getSelectedServerIds();
     updateServersStatus({ids, status})
     .then(() => {
-        let newServerList: Server[] = []
-        servers.forEach((server) => {
-            if (ids.includes(server.id)) {
-                server.status = status;
-            }
-            newServerList.push(server);
-        });
-        setServers(newServerList);
+        getServers();
         setSelected([]);
     });
   }

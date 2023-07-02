@@ -3,6 +3,8 @@ package main
 import (
 	"homeAssignement/rest-api-server-test/controllers"
 	"homeAssignement/rest-api-server-test/models"
+	repository "homeAssignement/rest-api-server-test/repositories"
+	"homeAssignement/rest-api-server-test/services"
 	"net/http"
 
 	"github.com/gin-gonic/gin"
@@ -66,6 +68,9 @@ func setupRouter() *gin.Engine {
 		v.RegisterValidation("validServerStatusValue", validateServerStatus)
 	}
 	models.ConnectDatabase()
+	serverRepo := repository.NewServerRepository(models.DB)
+	serverService := services.NewServerService(serverRepo)
+	ctrl := controllers.NewServerController(serverService)
 
 	// Middleware CORS
 	r.Use(func(c *gin.Context) {
@@ -76,13 +81,13 @@ func setupRouter() *gin.Engine {
 	})
 
 	// Routes
-	r.GET("/servers", controllers.FindServers)
-	r.POST("/server", controllers.CreateServer)
-	r.GET("/server/:id", controllers.FindServer)
-	r.PATCH("/server/:id", controllers.UpdateServer)
-	r.PUT("/servers/status", controllers.UpdateServerStatus)
-	r.DELETE("/server/:id", controllers.DeleteServer)
-	r.DELETE("/servers", controllers.DeleteServers)
+	r.GET("/servers", ctrl.FindServers)
+	r.POST("/server", ctrl.CreateServer)
+	r.GET("/server/:id", ctrl.FindServerByID)
+	r.PUT("/server/:id", ctrl.UpdateServer)
+	r.PUT("/servers/status", ctrl.UpdateServerStatus)
+	r.DELETE("/server/:id", ctrl.DeleteServer)
+	r.DELETE("/servers", ctrl.DeleteServers)
 
 	// Prevent CORS issue
 	handleOptionCorsIssue(r)
